@@ -21,8 +21,8 @@ interface IUniswapV2Router {
 
 contract Counter is Ownable, ReentrancyGuard {
     address public token; // 要回购并销毁的代币
-    address public router=0x10ED43C718714eb63d5aA57B78B54704E256024E;// DEX 路由合约（如 PancakeSwap Router）
-    address public wbnb=0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;// WBNB 地址（或当前链的包裹币）
+    address public router=0x10ED43C718714eb63d5aA57B78B54704E256024E; // DEX 路由合约（如 PancakeSwap Router）
+    address public wbnb=0xBB4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c; // WBNB 地址（或当前链的包裹币）
 
     uint256 public buybackCount; // 执行 buyback 的次数
     uint256 public totalBurned; // 总共销毁的代币数量
@@ -33,6 +33,8 @@ contract Counter is Ownable, ReentrancyGuard {
     address public constant DEAD =
         0x000000000000000000000000000000000000dEaD;
 
+
+
     constructor() Ownable(msg.sender) {}
 
     receive() external payable {}
@@ -40,6 +42,7 @@ contract Counter is Ownable, ReentrancyGuard {
     function setToken(address _token) external onlyOwner {
         token = _token;
     }
+
 
 
     // 使用合约中累积的 BNB 进行“回购再销毁”

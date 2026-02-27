@@ -202,35 +202,42 @@ export default function RobotDashboard() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2 rounded-3xl border border-black/[.08] bg-white p-6 dark:border-white/[.12] dark:bg-zinc-950">
         <div className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-          Robot 回购仪表盘
+          自动回购监控面板
         </div>
         <div className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
-          {data.token ? `${data.token.name}（${symbol}）` : "Token 未设置（仍可查看 BNB 储备与倒计时）"}
+          {data.token
+            ? `${data.token.name}（${symbol}）`
+            : "当前尚未绑定代币"}
         </div>
         <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-          ChainId: {data.chainId} ·{" "}
-          {lastUpdated ? `已更新：${new Date(lastUpdated).toLocaleString("zh-CN")}` : ""}
-          {error ? ` · 读取失败：${error}` : ""}
+          {lastUpdated
+            ? `最后更新：${new Date(lastUpdated).toLocaleString("zh-CN")}`
+            : ""}
+          {error ? "（部分数据暂时无法获取，当前显示为最近一次记录）" : ""}
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
-          title="20 分钟倒计时（距离可回购）"
+          title="回购倒计时"
           value={nextIn === 0 ? "可回购" : formatDuration(nextIn)}
-          subtitle={`interval: ${Math.floor(Number(data.robot.interval) / 60)} 分钟`}
+          subtitle={
+            nextIn === 0
+              ? "系统已满足回购条件"
+              : "预计每 20 分钟触发一次回购"
+          }
         />
 
         <StatCard
           title="回购次数"
           value={Number.isFinite(buybackCount) ? buybackCount : data.robot.buybackCount}
-          subtitle={`buyPercent: ${Number.isFinite(buyPercent) ? buyPercent : data.robot.buyPercent}%`}
+          subtitle="机器人已完成的回购次数"
         />
 
         <StatCard
-          title="税收实时储备额度（BNB）"
+          title="税收储备（BNB）"
           value={`${data.robot.nativeReserveFormatted} BNB`}
-          subtitle={`当前 robot BNB 余额（address(this).balance）`}
+          subtitle="当前合约内可用于回购的 BNB 数量"
         />
 
         <StatCard
@@ -242,21 +249,21 @@ export default function RobotDashboard() {
           }
           subtitle={
             price
-              ? `≈ ${price.price.tokenPriceBnb} BNB · BNB/USD: ${price.price.bnbUsdFormatted}`
-              : priceError ?? "未获取到价格（请确认已创建 token/WBNB Pair 且有流动性）"
+              ? `价格根据链上实时行情估算`
+              : "暂无价格数据"
           }
         />
 
         <StatCard
           title="总销毁量"
           value={data.token ? `${data.robot.totalBurnedFormatted} ${symbol}` : "—"}
-          subtitle={data.token ? "转入 0x…dEaD 的代币数量累计" : "未设置 token 时无法按 decimals 格式化"}
+          subtitle={data.token ? "累计销毁的代币数量" : "尚未绑定代币，暂无法展示"}
         />
 
         <StatCard
           title="总回购消耗 BNB"
           value={`${data.robot.totalBnbUsedFormatted} BNB`}
-          subtitle="累计用于回购代币的 BNB 数量"
+          subtitle="累计用于回购的 BNB 数量"
         />
 
         <StatCard
@@ -297,23 +304,18 @@ export default function RobotDashboard() {
               </>
             ) : (
               <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                提示：在链上对 robot 调用 `setToken(tokenAddress)` 后，将展示税率、实时价格、市值、销毁代币量等信息。
+                当前尚未绑定代币，绑定后将展示税率、销毁数量等更多信息。
               </div>
             )}
           </div>
         </div>
 
         <div className="rounded-2xl border border-black/[.08] bg-white p-5 text-sm dark:border-white/[.12] dark:bg-zinc-950">
-          <div className="font-medium text-zinc-950 dark:text-zinc-50">刷新说明</div>
+          <div className="font-medium text-zinc-950 dark:text-zinc-50">数据说明</div>
           <div className="mt-3 space-y-2 text-zinc-600 dark:text-zinc-300">
-            <div>页面每 5 秒从服务器读取一次链上数据。</div>
-            <div>倒计时每秒本地递减，下一次轮询会自动校准。</div>
-            <div>
-              市值为估算值：使用 <span className="font-mono">totalSupply × 价格(USD)</span> 计算。
-            </div>
-            <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-              当前储备（reserve）来自 `robot.getReserve()`，为 robot 合约地址持有的 BNB 余额。
-            </div>
+            <div>页面会自动定期刷新，尽量保持与链上数据同步。</div>
+            <div>倒计时为预计时间，实际执行时间以链上为准。</div>
+            <div>市值和价格均为根据链上行情估算，仅供参考，不构成投资建议。</div>
           </div>
         </div>
       </div>
