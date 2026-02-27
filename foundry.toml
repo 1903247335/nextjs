@@ -1,0 +1,15 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+remappings = [
+    "@openzeppelin/=lib/openzeppelin-contracts/"
+    ]
+# 为了在 BSC / BscScan 上更容易验证，建议固定编译器与编译参数
+# 注意：这些参数会影响最终字节码，修改后需要重新部署新合约地址再去 verify
+solc_version = "0.8.30"
+optimizer = true
+optimizer_runs = 200
+evm_version = "paris"
+use_literal_content = true
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
