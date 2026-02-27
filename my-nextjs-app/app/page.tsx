@@ -1,4 +1,4 @@
-import RobotDashboard from "@/app/components/RobotDashboard";
+import RobotDashboard from "./components/RobotDashboard";
 
 export default function Home() {
   return (

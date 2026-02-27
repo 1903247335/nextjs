@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { StatCard } from "@/app/components/StatCard";
-import { formatDuration, formatUsd } from "@/app/lib/format";
+import { StatCard } from "./StatCard";
+import { formatDuration, formatUsd } from "../lib/format";
 
 type RobotApiOk = {
   ok: true;
@@ -81,6 +81,7 @@ export default function RobotDashboard() {
   const [nextIn, setNextIn] = useState<number>(0);
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
+  // 15 秒轮询后端接口
   useEffect(() => {
     let cancelled = false;
 
@@ -89,14 +90,16 @@ export default function RobotDashboard() {
         const j = await fetchMetrics();
         if (cancelled) return;
         if (!j.ok) {
-          // 接口报错时，用占位数据让页面正常显示，用 error 文案提示
           setError(j.error);
+          // 占位数据，保证页面有结构
           setData({
             ok: true,
             chainId: 0,
             serverTimeMs: Date.now(),
             robot: {
-              address: process.env.NEXT_PUBLIC_ROBOT_ADDRESS ?? "0x0000000000000000000000000000000000000000",
+              address:
+                process.env.NEXT_PUBLIC_ROBOT_ADDRESS ??
+                "0x0000000000000000000000000000000000000000",
               token: "0x0000000000000000000000000000000000000000",
               buybackCount: "0",
               totalBurned: "0",
@@ -117,20 +120,20 @@ export default function RobotDashboard() {
           setLoading(false);
           return;
         }
+
         setError(null);
         setData(j);
         setLoading(false);
+
         const next = Number(j.robot.nextBuybackIn);
         setNextIn((prev) => {
           const n = Number.isFinite(next) ? next : 0;
-          // 只允许倒计时向下跳或从 0 恢复，避免轮询时被“重置变大”
           if (prev === 0 || n === 0) return n;
           if (n < prev - 1) return n;
           return prev;
         });
         setLastUpdated(j.serverTimeMs ?? Date.now());
 
-        // 价格/市值：只有 token 已设置时才查询
         if (
           j.token?.address &&
           j.token.address !== "0x0000000000000000000000000000000000000000"
@@ -146,7 +149,7 @@ export default function RobotDashboard() {
           }
         } else {
           setPrice(null);
-          setPriceError("未设置 token 地址（先在链上调用 setToken）");
+          setPriceError(null);
         }
       } catch (e) {
         if (cancelled) return;
@@ -156,7 +159,7 @@ export default function RobotDashboard() {
     };
 
     void load();
-    const poll = setInterval(load, 5000);
+    const poll = setInterval(load, 15000);
 
     return () => {
       cancelled = true;
@@ -164,6 +167,7 @@ export default function RobotDashboard() {
     };
   }, []);
 
+  // 本地倒计时每秒减 1
   useEffect(() => {
     const t = setInterval(() => {
       setNextIn((s) => (s > 0 ? s - 1 : 0));
@@ -202,12 +206,10 @@ export default function RobotDashboard() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2 rounded-3xl border border-black/[.08] bg-white p-6 dark:border-white/[.12] dark:bg-zinc-950">
         <div className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-          自动回购监控面板
+          烽火轮自动回购面板
         </div>
         <div className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
-          {data.token
-            ? `${data.token.name}（${symbol}）`
-            : "当前尚未绑定代币"}
+          {data.token ? `${data.token.name}（${symbol}）` : "当前尚未绑定代币"}
         </div>
         <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
           {lastUpdated
@@ -242,15 +244,9 @@ export default function RobotDashboard() {
 
         <StatCard
           title="实时价格"
-          value={
-            price
-              ? `${derived.tokenPriceUsd.toFixed(6)} USD`
-              : "—"
-          }
+          value={price ? `${derived.tokenPriceUsd.toFixed(6)} USD` : "—"}
           subtitle={
-            price
-              ? `价格根据链上实时行情估算`
-              : "暂无价格数据"
+            price ? "价格根据链上实时行情估算" : priceError ?? "暂无价格数据"
           }
         />
 

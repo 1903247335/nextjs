@@ -10,19 +10,40 @@ function jsonError(message: string, status = 500) {
 }
 
 export async function GET() {
-  const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL ?? "http://127.0.0.1:8545";
+  const rpcUrls = [
+    process.env.NEXT_PUBLIC_RPC_URL!,
+  ];
   const robotAddress = process.env.NEXT_PUBLIC_ROBOT_ADDRESS;
   const tokenAddressFromEnv = process.env.NEXT_PUBLIC_TOKEN_ADDRESS;
 
   if (!robotAddress) {
     return jsonError("缺少 NEXT_PUBLIC_ROBOT_ADDRESS（robot 合约地址）");
   }
+  let provider: ethers.JsonRpcProvider | null = null;
+  for (const url of rpcUrls) {
+    try {
+      const req = new ethers.FetchRequest(url);
+      // 单个 RPC 请求超时时间（毫秒）
+      req.timeout = 30000;
+      const p = new ethers.JsonRpcProvider(req);
+      await p.getNetwork(); // 测试连接
+      provider = p;
+      break;
+    } catch (err) {
+      console.warn(`RPC ${url} 连接失败:`, err);
+    }
+  }
 
-  const provider = new ethers.JsonRpcProvider(rpcUrl);
+  if (!provider) {
+    return jsonError("RPC 连接失败，请检查 NEXT_PUBLIC_RPC_URL 或本地节点是否启动");
+  }
+
   const counter = new ethers.Contract(robotAddress, counterAbi, provider);
 
   let chainId: number;
   try {
+    console.warn(provider);
+
     chainId = Number((await provider.getNetwork()).chainId);
   } catch {
     return jsonError("RPC 连接失败，请检查 NEXT_PUBLIC_RPC_URL 或本地节点是否启动");
