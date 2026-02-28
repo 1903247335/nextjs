@@ -125,27 +125,29 @@ export default function RobotDashboard() {
         setData(j);
         setLoading(false);
 
-        const next = Number(j.robot.nextBuybackIn);
-        const intervalSec = Number(j.robot.interval);
-        const buybackCountNum = Number(j.robot.buybackCount);
+        // 在线倒计时：以链上的 lastBuyback + interval 为基准，
+        // 每次合约执行回购后，lastBuyback 更新，下一轮倒计时自动重置。
+        const last = Number(j.robot.lastBuyback); // 秒
+        const intervalSec = Number(j.robot.interval); // 秒
+        const serverNowMs = j.serverTimeMs ?? Date.now();
+        const serverNowSec = Math.floor(serverNowMs / 1000);
 
-        setNextIn((prev) => {
-          // 还没有发生过回购时：前端自己从 interval 开始倒计时
-          if (!Number.isFinite(buybackCountNum) || buybackCountNum === 0) {
-            // 只在初次进入时从 interval 启动，后面完全依赖本地每秒递减
-            if (prev === 0 && Number.isFinite(intervalSec) && intervalSec > 0) {
-              return intervalSec;
-            }
+        if (Number.isFinite(last) && Number.isFinite(intervalSec) && intervalSec > 0) {
+          const nextTs = last + intervalSec;
+          const diff = Math.max(0, nextTs - serverNowSec);
+          setNextIn((prev) => {
+            const n = diff;
+            // 允许从 0 跳到新的倒计时；其余情况只允许向下跳，避免突然变大
+            if (prev === 0 || n === 0) return n;
+            if (n < prev - 1) return n;
             return prev;
-          }
+          });
+        } else {
+          // 回退：如果链上数据异常，就显示 0（可回购）
+          setNextIn(0);
+        }
 
-          const n = Number.isFinite(next) ? next : 0;
-          // 已经有过回购，则完全跟随链上 nextBuybackIn，但避免“向上跳”
-          if (prev === 0 || n === 0) return n;
-          if (n < prev - 1) return n;
-          return prev;
-        });
-        setLastUpdated(j.serverTimeMs ?? Date.now());
+        setLastUpdated(serverNowMs);
 
         if (
           j.token?.address &&

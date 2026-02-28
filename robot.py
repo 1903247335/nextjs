@@ -7,7 +7,7 @@ from web3 import Web3
 RPC_URL = os.environ.get("RPC_URL", "https://bsc-dataseed.binance.org")
 
 # 私钥从环境变量读取，更安全
-PRIVATE_KEY = "0x894deaae2d6122c01ccfd35bcfc3e5de47156acbebb2ee764237c9a1c4ff7386"
+PRIVATE_KEY = ""
 if not PRIVATE_KEY:
     raise ValueError("请设置环境变量 ROBOT_PRIVATE_KEY，例如: export ROBOT_PRIVATE_KEY=0x...")
 
