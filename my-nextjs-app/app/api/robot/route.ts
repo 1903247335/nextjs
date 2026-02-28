@@ -139,24 +139,18 @@ export async function GET() {
   let symbol: string;
   let decimals: number | bigint;
   let totalSupply: bigint;
-  let taxPercent: bigint;
-  let taxRecipient: string;
-  let taxRecipientBalance: bigint;
+  // 对于通用代币，税率等信息不一定存在，给出安全的默认值
+  let taxPercent: bigint = 0n;
+  let taxRecipient: string = ethers.ZeroAddress;
+  let taxRecipientBalance: bigint = 0n;
 
   try {
-    [name, symbol, decimals, totalSupply, taxPercent, taxRecipient] =
-      (await Promise.all([
-        token.name(),
-        token.symbol(),
-        token.decimals(),
-        token.totalSupply(),
-        token.taxPercent(),
-        token.taxRecipient(),
-      ])) as [string, string, number | bigint, bigint, bigint, string];
-
-    [taxRecipientBalance] = (await Promise.all([
-      token.balanceOf(taxRecipient),
-    ])) as [bigint];
+    [name, symbol, decimals, totalSupply] = (await Promise.all([
+      token.name(),
+      token.symbol(),
+      token.decimals(),
+      token.totalSupply(),
+    ])) as [string, string, number | bigint, bigint];
   } catch (e) {
     const msg =
       e instanceof Error

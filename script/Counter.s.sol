@@ -11,10 +11,12 @@ contract CounterScript is Script {
     function setUp() public {}
 
     function run() public {
-       vm.startBroadcast();
-        Counter robot = new Counter();
-console.log("Robot deployed at:", address(robot));
-        vm.stopBroadcast();
+        // 多签地址：部署后将作为合约唯一 owner
+        address multisig = 0xa1a71Dc0CB6D3cbd6f15B2Bd6CECeD574c104E31;
 
+        vm.startBroadcast();
+        Counter robot = new Counter(multisig);
+        console.log("Robot deployed at:", address(robot));
+        vm.stopBroadcast();
     }
 }

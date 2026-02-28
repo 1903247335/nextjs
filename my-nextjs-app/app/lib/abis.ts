@@ -102,23 +102,10 @@ export const erc20Abi = [
   },
 ] as const;
 
-export const taxTokenAbi = [
-  ...erc20Abi,
-  {
-    inputs: [],
-    name: "taxPercent",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "taxRecipient",
-    outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "view",
-    type: "function",
-  },
-] as const;
+// 对于代币，这里只依赖标准 ERC20 接口。
+// 一些自定义税收代币（如 FlapTaxToken）没有统一的 tax 接口，
+// 因此在后端只读取 name/symbol/decimals/totalSupply。
+export const taxTokenAbi = [...erc20Abi] as const;
 
 export const pancakeFactoryAbi = [
   {

@@ -126,8 +126,21 @@ export default function RobotDashboard() {
         setLoading(false);
 
         const next = Number(j.robot.nextBuybackIn);
+        const intervalSec = Number(j.robot.interval);
+        const buybackCountNum = Number(j.robot.buybackCount);
+
         setNextIn((prev) => {
+          // 还没有发生过回购时：前端自己从 interval 开始倒计时
+          if (!Number.isFinite(buybackCountNum) || buybackCountNum === 0) {
+            // 只在初次进入时从 interval 启动，后面完全依赖本地每秒递减
+            if (prev === 0 && Number.isFinite(intervalSec) && intervalSec > 0) {
+              return intervalSec;
+            }
+            return prev;
+          }
+
           const n = Number.isFinite(next) ? next : 0;
+          // 已经有过回购，则完全跟随链上 nextBuybackIn，但避免“向上跳”
           if (prev === 0 || n === 0) return n;
           if (n < prev - 1) return n;
           return prev;
@@ -206,7 +219,7 @@ export default function RobotDashboard() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2 rounded-3xl border border-black/[.08] bg-white p-6 dark:border-white/[.12] dark:bg-zinc-950">
         <div className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-          烽火轮自动回购面板
+   
         </div>
         <div className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
           {data.token ? `${data.token.name}（${symbol}）` : "当前尚未绑定代币"}

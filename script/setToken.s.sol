@@ -7,11 +7,12 @@ contract TestTransfer is Script {
     function run() external {
         vm.startBroadcast();
 
-        // 1. 填上刚才部署出来的 Counter 地址
-        Counter counter = Counter(0x570D4D26A7E37f5bE4F4509B2938699bdB00cf96);
+        // 1. 填上刚才部署出来的 Counter 地址（需要先转为 payable）
+        address payable robot = payable(0x570D4D26A7E37f5bE4F4509B2938699bdB00cf96);
+        Counter counter = Counter(robot);
 
-//        // 2. 设置要回购的代币地址（你自己的税收代币）
-        counter.setToken(0xYourTokenAddress);
+        // 注意这里用校验和地址
+        counter.setToken(0x56ab1b7A0dC29c2D779f31704E4f284105A67777);
         console.log("set token success");
 
         vm.stopBroadcast();

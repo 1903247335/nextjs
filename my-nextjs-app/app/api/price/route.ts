@@ -31,7 +31,8 @@ export async function GET(req: Request) {
 
   const factoryAddress =
     process.env.NEXT_PUBLIC_PANCAKE_FACTORY ??
-    "0xCA143Ce32Fe78f1f7019d7d551a6402fC5350c73"; // PancakeSwap V2 Factory (BSC)
+    // 使用全小写，避免 ethers 对错误校验和报错
+    "0xca143ce32fe78f1f7019d7d551a6402fc5350c73"; // PancakeSwap V2 Factory (BSC)
   const wbnbAddress =
     process.env.NEXT_PUBLIC_WBNB_ADDRESS ??
     "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"; // WBNB (BSC)
